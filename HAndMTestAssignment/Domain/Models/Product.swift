@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// Represents a product displayed in the product list.
 struct Product: Identifiable {
     let id: String
     let name: String
@@ -15,12 +16,4 @@ struct Product: Identifiable {
     let originalPrice: String
     let salePrice: String?
     let swatches: [ColorSwatch]
-}
-
-struct ColorSwatch: Identifiable {
-    let id: String
-    let colorCode: String
-    let colorName: String
-
-    var color: String { colorCode }
 }

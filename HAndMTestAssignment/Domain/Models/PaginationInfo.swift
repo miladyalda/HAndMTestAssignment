@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// Represents the pagination state for the current search results.
 struct PaginationInfo {
     let currentPage: Int
     let nextPage: Int?
