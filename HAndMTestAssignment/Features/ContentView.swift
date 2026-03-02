@@ -8,42 +8,45 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var result: String = "Loading..."
-
+    
+    @State private var viewModel = ProductListViewModel(repository: ProductRepository())
+    
     var body: some View {
         ScrollView {
-            Text(result)
-                .padding()
+            LazyVStack(alignment: .leading, spacing: 8) {
+                Text("State: \(String(describing: viewModel.state))")
+                    .font(.headline)
+                Text("Products: \(viewModel.products.count)")
+                    .font(.subheadline)
+
+                Divider()
+
+                ForEach(viewModel.products) { product in
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("🏷 \(product.brand)")
+                        Text("👖 \(product.name)")
+                        Text("💰 \(product.originalPrice)")
+                        if let sale = product.salePrice {
+                            Text("🔴 Sale: \(sale)")
+                        }
+                        Text("🎨 Colors: \(product.swatches.count)")
+                        Divider()
+                    }
+                    .onAppear {
+                        Task {
+                            await viewModel.onProductAppeared(product)
+                        }
+                    }
+                }
+
+                if viewModel.state == .loadingMore {
+                    ProgressView("Loading more...")
+                }
+            }
+            .padding()
         }
         .task {
-            await testAPI()
-        }
-    }
-
-    private func testAPI() async {
-        let repository = ProductRepository()
-        do {
-            let (products, pagination) = try await repository.fetchProducts(query: "jeans", page: 1)
-
-            var output = "✅ Page \(pagination.currentPage) of \(pagination.totalPages)\n"
-            output += "Next page: \(pagination.nextPage?.description ?? "none")\n"
-            output += "Products: \(products.count)\n\n"
-
-            for product in products {
-                output += "---\n"
-                output += "🏷 \(product.brand)\n"
-                output += "👖 \(product.name)\n"
-                output += "💰 \(product.originalPrice)\n"
-                if let sale = product.salePrice {
-                    output += "🔴 Sale: \(sale)\n"
-                }
-                output += "🎨 Colors: \(product.swatches.count)\n"
-                output += "🖼 Image: \(product.imageURL?.absoluteString ?? "none")\n\n"
-            }
-
-            result = output
-        } catch {
-            result = "❌ Error: \(error.localizedDescription)\n\nDetails: \(error)"
+            await viewModel.loadInitialProducts()
         }
     }
 }

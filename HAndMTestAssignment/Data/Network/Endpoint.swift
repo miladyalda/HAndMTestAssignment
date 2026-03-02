@@ -42,7 +42,7 @@ enum Endpoint {
         switch self {
         case .searchProducts(let query, let page):
             return [
-                URLQueryItem(name: "touchPoint", value: "ios"),
+                URLQueryItem(name: "touchPoint", value: Constants.API.touchPoint),
                 URLQueryItem(name: "query", value: query),
                 URLQueryItem(name: "page", value: String(page))
             ]
