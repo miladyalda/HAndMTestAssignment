@@ -34,9 +34,9 @@ enum DTOMapper {
             .first { $0.priceType == Constants.Pricing.yellowPrice }?
             .formattedPrice
 
-        let swatches = dto.swatches.prefix(6).map { swatch in
+        let swatches = dto.swatches.enumerated().map { index, swatch in
             ColorSwatch(
-                id: swatch.colorCode + swatch.colorName,
+                id: "\(dto.id)_\(swatch.colorCode)_\(index)",
                 colorCode: swatch.colorCode,
                 colorName: swatch.colorName
             )
