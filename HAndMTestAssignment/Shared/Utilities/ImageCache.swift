@@ -16,14 +16,14 @@ final class ImageCache: @unchecked Sendable {
     let session: URLSession
 
     private init() {
-        cache.countLimit = 50
-        cache.totalCostLimit = 30 * 1024 * 1024
+        cache.countLimit = 100
+        cache.totalCostLimit = 50 * 1024 * 1024 // 50 MB
 
         let config = URLSessionConfiguration.default
-        config.httpMaximumConnectionsPerHost = 4
+        config.httpMaximumConnectionsPerHost = 6
         config.urlCache = URLCache(
-            memoryCapacity: 10 * 1024 * 1024,
-            diskCapacity: 50 * 1024 * 1024
+            memoryCapacity: 20 * 1024 * 1024,
+            diskCapacity: 100 * 1024 * 1024
         )
         session = URLSession(configuration: config)
 

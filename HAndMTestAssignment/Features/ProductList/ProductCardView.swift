@@ -40,7 +40,7 @@ struct ProductCardView: View {
     private var imageSection: some View {
         ZStack(alignment: .topTrailing) {
             GeometryReader { geometry in
-                CachedAsyncImage(url: product.imageURL, targetWidth: 150)
+                CachedAsyncImage(url: product.imageURL)
                     .frame(width: geometry.size.width, height: geometry.size.width * 1.5)
             }
             .aspectRatio(2/3, contentMode: .fit)
@@ -72,6 +72,7 @@ struct ProductCardView: View {
 
             priceView
         }
+        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
     }
 
     private var priceView: some View {

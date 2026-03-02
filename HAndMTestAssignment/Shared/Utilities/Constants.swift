@@ -20,4 +20,8 @@ enum Constants {
         static let whitePrice = "whitePrice"
         static let yellowPrice = "yellowPrice"
     }
+    
+    enum Image {
+        static let thumbnailWidth = 400
+    }
 }

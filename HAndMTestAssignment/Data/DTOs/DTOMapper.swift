@@ -24,7 +24,7 @@ enum DTOMapper {
     /// - Limits swatches to first 6 to match the design.
     static func mapToProduct(from dto: ProductDTO) -> Product {
         let imageURLString = dto.modelImage ?? dto.productImage
-        let imageURL = URL(string: imageURLString)
+        let imageURL = URL(string: imageURLString + "?imwidth=\(Constants.Image.thumbnailWidth)")
 
         let originalPrice = dto.prices
             .first { $0.priceType == Constants.Pricing.whitePrice }?

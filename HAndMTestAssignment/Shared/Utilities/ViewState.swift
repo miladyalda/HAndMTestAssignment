@@ -6,7 +6,6 @@
 //
 
 import Foundation
-// MARK: - View State
 
 /// Represents the possible states of the product list.
 enum ViewState: Equatable {

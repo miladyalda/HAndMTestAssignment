@@ -7,23 +7,27 @@
 
 import SwiftUI
 
-/// A custom async image view with in-memory caching and downscaling.
+/// A custom async image view with in-memory caching.
+/// Loads optimized thumbnails from H&M's CDN and caches them in memory.
 struct CachedAsyncImage: View {
 
-    @Environment(\.displayScale) private var displayScale
-
     let url: URL?
-    var targetWidth: CGFloat = 200
 
     @State private var uiImage: UIImage?
     @State private var isLoading = false
+    @State private var hasFailed = false
+    @State private var attemptID = UUID()
 
     // MARK: - Body
 
     var body: some View {
         imageContent
-            .animation(.easeIn(duration: 0.2), value: uiImage != nil)
-            .task(id: url) { await loadImage() }
+            .animation(.easeIn(duration: 0.15), value: uiImage != nil)
+            .task(id: attemptID) { await loadImage() }
+            .onAppear {
+                loadFromCacheSync()
+                retryIfNeeded()
+            }
     }
 
     // MARK: - Views
@@ -55,8 +59,26 @@ struct CachedAsyncImage: View {
 
     // MARK: - Image Loading
 
+    /// Instantly loads from cache without async overhead.
+    /// Prevents placeholder flash when scrolling back to cached images.
+    private func loadFromCacheSync() {
+        guard uiImage == nil, let url else { return }
+        if let cached = ImageCache.shared.image(for: url) {
+            uiImage = cached
+        }
+    }
+
+    /// Retries loading if the previous attempt failed and the cell reappears.
+    private func retryIfNeeded() {
+        if hasFailed && uiImage == nil {
+            hasFailed = false
+            attemptID = UUID()
+        }
+    }
+
+    /// Downloads and caches the image. Server returns pre-sized thumbnails via imwidth parameter.
     private func loadImage() async {
-        guard let url, uiImage == nil else { return }
+        guard let url, uiImage == nil, !isLoading else { return }
 
         if let cached = ImageCache.shared.image(for: url) {
             self.uiImage = cached
@@ -69,43 +91,14 @@ struct CachedAsyncImage: View {
             let (data, _) = try await ImageCache.shared.session.data(from: url)
             guard !Task.isCancelled else { return }
 
-            if let image = downsample(data: data, targetWidth: targetWidth, scale: displayScale) {
+            if let image = UIImage(data: data) {
                 ImageCache.shared.store(image, for: url)
                 self.uiImage = image
             }
         } catch {
-            // Silently fail — placeholder stays visible
+            hasFailed = true
         }
 
         isLoading = false
-    }
-
-    // MARK: - Downsampling
-
-    /// Downscales image data to the target width using ImageIO.
-    /// Much more memory efficient than decoding the full image first.
-    private func downsample(data: Data, targetWidth: CGFloat, scale: CGFloat) -> UIImage? {
-        let maxPixelSize = targetWidth * scale
-
-        let options: [CFString: Any] = [
-            kCGImageSourceShouldCache: false
-        ]
-
-        guard let source = CGImageSourceCreateWithData(data as CFData, options as CFDictionary) else {
-            return nil
-        }
-
-        let downsampleOptions: [CFString: Any] = [
-            kCGImageSourceCreateThumbnailFromImageAlways: true,
-            kCGImageSourceThumbnailMaxPixelSize: maxPixelSize,
-            kCGImageSourceCreateThumbnailWithTransform: true,
-            kCGImageSourceShouldCacheImmediately: true
-        ]
-
-        guard let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, downsampleOptions as CFDictionary) else {
-            return nil
-        }
-
-        return UIImage(cgImage: cgImage)
     }
 }
