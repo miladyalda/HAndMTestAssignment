@@ -75,7 +75,7 @@ The `Endpoint` enum breaks the API URL into independently configurable component
 - **Server-side image resizing** via `?imwidth=400` reduces image payloads by ~95%, from ~1 MB to ~30-50 KB each.
 - **LazyVGrid** renders only visible cells, keeping memory stable during scrolling.
 - **NSCache** with configurable limits and memory warning observer for automatic cleanup.
-- **Connection limiting** (`httpMaximumConnectionsPerHost: 4`) prevents overwhelming the image server during fast scrolling.
+- **Connection limiting** (`httpMaximumConnectionsPerHost: 6`) prevents overwhelming the image server during fast scrolling.
 - **Task cancellation** — Image downloads are automatically cancelled when cells scroll off screen via SwiftUI's `.task(id:)` lifecycle.
 - **No memory leaks** — Verified with Instruments Leaks tool.
 
