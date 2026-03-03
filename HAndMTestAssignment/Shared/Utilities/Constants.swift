@@ -16,12 +16,9 @@ enum Constants {
         static let touchPoint = "ios"
     }
 
-    enum Pricing {
-        static let whitePrice = "whitePrice"
-        static let yellowPrice = "yellowPrice"
-    }
-    
     enum Image {
+        /// Width parameter appended to H&M CDN image URLs (imwidth).
+        /// The server returns pre-sized thumbnails, reducing bandwidth and memory usage.
         static let thumbnailWidth = 400
     }
 }

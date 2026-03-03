@@ -11,8 +11,10 @@ import SwiftUI
 struct ProductCardView: View {
     let product: Product
 
+    @State private var isFavorite = false
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: ProductMetrics.cardContentSpacing) {
             imageSection
             infoSection
             swatchSection
@@ -24,42 +26,40 @@ struct ProductCardView: View {
     // MARK: - Accessibility
 
     private var accessibilityDescription: String {
-        var description = "\(product.brand), \(product.name), \(product.originalPrice)"
-        if let salePrice = product.salePrice {
-            description += ", on sale for \(salePrice)"
-        }
-        if !product.swatches.isEmpty {
-            let colorNames = product.swatches.map { $0.colorName }.joined(separator: ", ")
-            description += ", available in \(colorNames)"
-        }
-        return description
+        ProductStrings.productAccessibilityLabel(
+            brand: product.brand,
+            name: product.name,
+            originalPrice: product.originalPrice,
+            salePrice: product.salePrice,
+            colorNames: product.swatches.map { $0.colorName },
+            isFavorite: isFavorite
+        )
     }
 
     // MARK: - Image Section
 
     private var imageSection: some View {
         ZStack(alignment: .topTrailing) {
-            GeometryReader { geometry in
-                CachedAsyncImage(url: product.imageURL)
-                    .frame(width: geometry.size.width, height: geometry.size.width * 1.5)
-            }
-            .aspectRatio(2/3, contentMode: .fit)
-            .clipped()
+            CachedAsyncImage(url: product.imageURL)
+                .aspectRatio(ProductMetrics.imageAspectRatio, contentMode: .fill)
+                .clipped()
 
-            Button(action: {}) {
-                Image(systemName: "heart")
-                    .font(.system(size: 16))
-                    .foregroundStyle(.primary)
-                    .padding(8)
+            Button {
+                isFavorite.toggle()
+            } label: {
+                Image(systemName: isFavorite ? ProductIcons.favoriteFilled : ProductIcons.favorite)
+                    .font(.system(size: ProductMetrics.favoriteIconSize))
+                    .foregroundStyle(isFavorite ? .red : .primary)
+                    .padding(ProductMetrics.favoritePadding)
             }
-            .accessibilityLabel("Add \(product.name) to favorites")
+            .accessibilityLabel(isFavorite ? ProductStrings.removeFavorite(product.name) : ProductStrings.addFavorite(product.name))
         }
     }
 
     // MARK: - Info Section
 
     private var infoSection: some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: ProductMetrics.cardInfoSpacing) {
             Text(product.brand)
                 .font(.caption2)
                 .foregroundStyle(.secondary)
@@ -76,7 +76,7 @@ struct ProductCardView: View {
     }
 
     private var priceView: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: ProductMetrics.priceSpacing) {
             if let salePrice = product.salePrice {
                 Text(salePrice)
                     .font(.caption)
@@ -95,23 +95,23 @@ struct ProductCardView: View {
     // MARK: - Swatch Section
 
     private var swatchSection: some View {
-        HStack(spacing: 4) {
-            let visibleSwatches = Array(product.swatches.prefix(4))
+        HStack(spacing: ProductMetrics.swatchSpacing) {
+            let visibleSwatches = Array(product.swatches.prefix(ProductMetrics.maxVisibleSwatches))
             let remaining = product.swatches.count - visibleSwatches.count
 
             ForEach(visibleSwatches) { swatch in
-                RoundedRectangle(cornerRadius: 2)
+                RoundedRectangle(cornerRadius: ProductMetrics.swatchCornerRadius)
                     .fill(Color(hex: swatch.colorCode))
-                    .frame(width: 12, height: 12)
+                    .frame(width: ProductMetrics.swatchSize, height: ProductMetrics.swatchSize)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 2)
-                            .stroke(Color.gray.opacity(0.3), lineWidth: 0.5)
+                        RoundedRectangle(cornerRadius: ProductMetrics.swatchCornerRadius)
+                            .stroke(Color.gray.opacity(0.3), lineWidth: ProductMetrics.swatchBorderWidth)
                     )
             }
 
             if remaining > 0 {
                 Text("+\(remaining)")
-                    .font(.system(size: 10))
+                    .font(.system(size: ProductMetrics.swatchOverflowFontSize))
                     .foregroundStyle(.secondary)
             }
         }

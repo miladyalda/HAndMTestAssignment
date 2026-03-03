@@ -27,11 +27,11 @@ enum DTOMapper {
         let imageURL = URL(string: imageURLString + "?imwidth=\(Constants.Image.thumbnailWidth)")
 
         let originalPrice = dto.prices
-            .first { $0.priceType == Constants.Pricing.whitePrice }?
+            .first { $0.priceType == .whitePrice }?
             .formattedPrice ?? ""
 
         let salePrice = dto.prices
-            .first { $0.priceType == Constants.Pricing.yellowPrice }?
+            .first { $0.priceType == .yellowPrice }?
             .formattedPrice
 
         let swatches = dto.swatches.enumerated().map { index, swatch in

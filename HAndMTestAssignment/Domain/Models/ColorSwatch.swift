@@ -7,7 +7,6 @@
 
 import Foundation
 
-
 /// Represents a color variant of a product.
 struct ColorSwatch: Identifiable {
     let id: String

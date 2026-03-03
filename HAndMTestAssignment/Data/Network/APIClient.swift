@@ -29,7 +29,20 @@ final class APIClient: APIClientProtocol {
         }
 
         // Perform the network request
-        let (data, response) = try await session.data(from: url)
+        let data: Data
+        let response: URLResponse
+
+        do {
+            (data, response) = try await session.data(from: url)
+        } catch is CancellationError {
+            throw CancellationError()
+        } catch let error as URLError where error.code == .cancelled {
+            throw CancellationError()
+        } catch let error as URLError {
+            throw APIError.networkError(error)
+        } catch {
+            throw APIError.unknown(error)
+        }
 
         // Validate HTTP response
         guard let httpResponse = response as? HTTPURLResponse else {

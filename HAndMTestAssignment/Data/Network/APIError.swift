@@ -20,6 +20,8 @@ enum APIError: LocalizedError {
     case decodingError(Error)
     /// An unexpected error occurred.
     case unknown(Error)
+    /// A network-level error occurred (no internet, timeout, DNS failure, etc.)
+    case networkError(URLError)
 
     var errorDescription: String? {
         switch self {
@@ -33,6 +35,15 @@ enum APIError: LocalizedError {
             return "Failed to process server response"
         case .unknown(let error):
             return error.localizedDescription
+        case .networkError(let error):
+            switch error.code {
+            case .notConnectedToInternet:
+                return "No internet connection. Please check your network."
+            case .timedOut:
+                return "Request timed out. Please try again."
+            default:
+                return "Network error. Please try again."
+            }
         }
     }
 }

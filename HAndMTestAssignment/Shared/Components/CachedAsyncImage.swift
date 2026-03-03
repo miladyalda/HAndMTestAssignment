@@ -15,7 +15,6 @@ struct CachedAsyncImage: View {
 
     @State private var uiImage: UIImage?
     @State private var isLoading = false
-    @State private var hasFailed = false
     @State private var attemptID = UUID()
 
     // MARK: - Body
@@ -25,8 +24,9 @@ struct CachedAsyncImage: View {
             .animation(.easeIn(duration: 0.15), value: uiImage != nil)
             .task(id: attemptID) { await loadImage() }
             .onAppear {
-                loadFromCacheSync()
-                retryIfNeeded()
+                if uiImage == nil && !isLoading {
+                    attemptID = UUID()
+                }
             }
     }
 
@@ -50,7 +50,7 @@ struct CachedAsyncImage: View {
                 if isLoading {
                     ProgressView()
                 } else {
-                    Image(systemName: "photo")
+                    Image(systemName: ProductIcons.imagePlaceholder)
                         .foregroundStyle(.gray.opacity(0.3))
                         .font(.title2)
                 }
@@ -59,44 +59,23 @@ struct CachedAsyncImage: View {
 
     // MARK: - Image Loading
 
-    /// Instantly loads from cache without async overhead.
-    /// Prevents placeholder flash when scrolling back to cached images.
-    private func loadFromCacheSync() {
-        guard uiImage == nil, let url else { return }
-        if let cached = ImageCache.shared.image(for: url) {
-            uiImage = cached
-        }
-    }
-
-    /// Retries loading if the previous attempt failed and the cell reappears.
-    private func retryIfNeeded() {
-        if hasFailed && uiImage == nil {
-            hasFailed = false
-            attemptID = UUID()
-        }
-    }
-
-    /// Downloads and caches the image. Server returns pre-sized thumbnails via imwidth parameter.
+    /// Loads from cache or downloads via the actor's deduplicating loader.
     private func loadImage() async {
         guard let url, uiImage == nil, !isLoading else { return }
 
-        if let cached = ImageCache.shared.image(for: url) {
+        if let cached = await ImageCache.shared.image(for: url) {
             self.uiImage = cached
             return
         }
 
         isLoading = true
 
-        do {
-            let (data, _) = try await ImageCache.shared.session.data(from: url)
-            guard !Task.isCancelled else { return }
-
-            if let image = UIImage(data: data) {
-                ImageCache.shared.store(image, for: url)
-                self.uiImage = image
+        if let image = await ImageCache.shared.loadImage(from: url) {
+            guard !Task.isCancelled else {
+                isLoading = false
+                return
             }
-        } catch {
-            hasFailed = true
+            self.uiImage = image
         }
 
         isLoading = false

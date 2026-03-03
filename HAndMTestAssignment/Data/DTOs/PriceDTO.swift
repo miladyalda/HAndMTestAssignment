@@ -8,7 +8,12 @@
 import Foundation
 
 struct PriceDTO: Codable {
-    let priceType: String
+    let priceType: PriceType
     let price: Double
     let formattedPrice: String
+}
+
+enum PriceType: String, Codable {
+    case whitePrice
+    case yellowPrice
 }

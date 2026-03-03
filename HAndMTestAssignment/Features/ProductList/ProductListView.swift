@@ -12,8 +12,8 @@ struct ProductListView: View {
     @State private var viewModel = ProductListViewModel(repository: ProductRepository())
 
     private let columns = [
-        GridItem(.flexible(), spacing: 8),
-        GridItem(.flexible(), spacing: 8)
+        GridItem(.flexible(), spacing: ProductMetrics.columnSpacing),
+        GridItem(.flexible(), spacing: ProductMetrics.columnSpacing)
     ]
 
     // MARK: - Body
@@ -21,7 +21,7 @@ struct ProductListView: View {
     var body: some View {
         NavigationStack {
             content
-                .navigationTitle("Jeans")
+                .navigationTitle(ProductStrings.navigationTitle)
                 .navigationBarTitleDisplayMode(.inline)
                 .task { await viewModel.loadInitialProducts() }
         }
@@ -37,16 +37,22 @@ struct ProductListView: View {
         case .loaded, .loadingMore:
             productGrid
         case .error(let message):
-            StatusView(icon: "exclamationmark.triangle", message: message, actionTitle: "Try Again", action: viewModel.retry)
+            StatusView(
+                icon: ProductIcons.error,
+                message: message,
+                actionTitle: ProductStrings.retryButton
+            ) {
+                Task { await viewModel.retry() }
+            }
         case .empty:
-            StatusView(icon: "magnifyingglass", message: "No products found")
+            StatusView(icon: ProductIcons.emptySearch, message: ProductStrings.emptyMessage)
         }
     }
 
     // MARK: - Subviews
 
     private var loadingView: some View {
-        ProgressView("Loading products...")
+        ProgressView(ProductStrings.loadingMessage)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
@@ -57,16 +63,17 @@ struct ProductListView: View {
                 paginationSpinner
             }
         }
+        .refreshable { await viewModel.refresh() }
     }
 
     private var productColumns: some View {
-        LazyVGrid(columns: columns, spacing: 16) {
+        LazyVGrid(columns: columns, spacing: ProductMetrics.rowSpacing) {
             ForEach(viewModel.products) { product in
                 ProductCardView(product: product)
                     .onAppear { Task { await viewModel.onProductAppeared(product) } }
             }
         }
-        .padding(.horizontal, 8)
+        .padding(.horizontal, ProductMetrics.horizontalPadding)
     }
 
     @ViewBuilder
