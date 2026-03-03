@@ -33,7 +33,7 @@ HAndMTestAssignment/
 - **Data** — Handles API communication. DTOs mirror the JSON response and are mapped to domain models via `DTOMapper`, keeping the API contract separate from the rest of the app.
 - **Domain** — Contains pure business models (`Product`, `PaginationInfo`) with no dependencies on the Data or UI layers.
 - **Features** — Each feature is a self-contained module with its own View and ViewModel. `ProductListViewModel` manages pagination state, loading, and error handling.
-- **Shared** — Reusable components like `CachedAsyncImage`, `StatusView`, and `ImageCache` that could be used across multiple features.
+- **Shared** — Reusable components like `CachedAsyncImage`, `StatusView`, and `ImageCache`, plus centralized design constants (`ProductMetrics`, `ProductStrings`, `ProductIcons`).
 
 ### Data Flow
 ```
@@ -50,13 +50,15 @@ API response models are decoupled from business models. If the API changes, only
 ### Protocol-Based Design
 Both `APIClientProtocol` and `ProductRepositoryProtocol` are defined as protocols, enabling dependency injection and making every layer independently testable with mock implementations.
 
-### Custom Image Loading with NSCache
+### Custom Image Loading with Actor-Based Cache
 Built a custom `CachedAsyncImage` view instead of using `AsyncImage` for full control over:
 - **Server-side optimization** — Appends `?imwidth=400` to image URLs, reducing download size from ~1 MB to ~30-50 KB per image.
-- **In-memory caching** with `NSCache` (100 items, 50 MB limit) with automatic eviction under memory pressure.
+- **Thread-safe actor-based cache** with `NSCache` (100 items, 50 MB limit) and automatic eviction under memory pressure.
+- **Request deduplication** — Multiple views requesting the same image share a single download task.
 - **Disk caching** via `URLCache` (20 MB memory, 100 MB disk) for instant reload on revisit.
-- **Synchronous cache lookup** on appear — cached images display instantly with zero flicker when scrolling back.
-- **Automatic retry** for failed image loads when cells reappear (handles server rate-limiting gracefully).
+- **HTTP status validation** — Returns nil immediately on non-200 responses instead of attempting to decode invalid data.
+- **Automatic retry** for failed or cancelled image loads when cells reappear.
+- **Accurate memory tracking** via `cgImage.bytesPerRow` for precise cache eviction.
 
 ### Pagination
 The ViewModel triggers the next page fetch when the user scrolls to 70% of the current list, giving the network request time to complete before the user reaches the bottom. Duplicate products across pages are filtered by ID.
@@ -66,17 +68,18 @@ The `Endpoint` enum breaks the API URL into independently configurable component
 
 ## Accessibility
 
-- **VoiceOver** — Each product card is read as a single combined element: brand, name, price, and available colors. The favorite button has its own accessibility label. Color swatches are hidden from VoiceOver since colors are described in the card label.
-- **Dynamic Type** — All text uses system fonts that scale with the user's preferred text size, capped at `xxxLarge` to protect the grid layout. Product names reserve space for two lines to maintain consistent card alignment across all text sizes.
+- **VoiceOver** — Each product card is read as a single combined element: brand, name, price, sale status, and available colors. The favorite button has a dynamic accessibility label that updates on toggle. Color swatches are hidden from VoiceOver since colors are described in the card label.
+- **Dynamic Type** — All text uses system fonts that scale with the user's preferred text size, capped at `xxxLarge` to protect the grid layout.
 - **Dark Mode** — Semantic colors (`.primary`, `.secondary`) adapt automatically to light and dark appearances. Placeholders and swatch borders work in both modes.
 
 ## Performance
 
 - **Server-side image resizing** via `?imwidth=400` reduces image payloads by ~95%, from ~1 MB to ~30-50 KB each.
 - **LazyVGrid** renders only visible cells, keeping memory stable during scrolling.
-- **NSCache** with configurable limits and memory warning observer for automatic cleanup.
+- **Actor-based image cache** with `NSCache`, configurable limits, and memory warning observer for automatic cleanup.
+- **Request deduplication** — Concurrent requests for the same image URL share a single network task.
 - **Connection limiting** (`httpMaximumConnectionsPerHost: 6`) prevents overwhelming the image server during fast scrolling.
-- **Task cancellation** — Image downloads are automatically cancelled when cells scroll off screen via SwiftUI's `.task(id:)` lifecycle.
+- **Task cancellation** — Image downloads are automatically cancelled via SwiftUI's `.task(id:)` lifecycle, with cooperative cancellation support in the network layer.
 - **No memory leaks** — Verified with Instruments Leaks tool.
 
 ## Testing
