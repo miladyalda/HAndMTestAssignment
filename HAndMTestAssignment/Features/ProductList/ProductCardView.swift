@@ -21,6 +21,8 @@ struct ProductCardView: View {
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(accessibilityDescription)
+        .accessibilityIdentifier(AccessibilityID.productCard(product.id))
+
     }
 
     // MARK: - Accessibility
@@ -52,6 +54,7 @@ struct ProductCardView: View {
                     .foregroundStyle(isFavorite ? .red : .primary)
                     .padding(ProductMetrics.favoritePadding)
             }
+            .accessibilityIdentifier(AccessibilityID.favoriteButton(product.id))
             .accessibilityLabel(isFavorite ? ProductStrings.removeFavorite(product.name) : ProductStrings.addFavorite(product.name))
         }
     }

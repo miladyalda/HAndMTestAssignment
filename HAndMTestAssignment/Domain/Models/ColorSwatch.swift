@@ -13,5 +13,5 @@ struct ColorSwatch: Identifiable {
     let colorCode: String
     let colorName: String
 
-    var color: String { colorCode }
+   // var color: String { colorCode }
 }

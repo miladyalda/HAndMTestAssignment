@@ -19,7 +19,7 @@ struct DTOMapperTests {
             productName: "Wide Jeans",
             brandName: "H&M",
             prices: [
-                PriceDTO(priceType: "whitePrice", price: 299.0, formattedPrice: "299,00 kr.")
+                PriceDTO(priceType: .whitePrice, price: 299.0, formattedPrice: "299,00 kr.")
             ],
             modelImage: "https://example.com/model.jpg",
             productImage: "https://example.com/product.jpg",
@@ -35,7 +35,7 @@ struct DTOMapperTests {
         #expect(product.brand == "H&M")
         #expect(product.originalPrice == "299,00 kr.")
         #expect(product.salePrice == nil)
-        #expect(product.imageURL?.absoluteString == "https://example.com/model.jpg")
+        #expect(product.imageURL?.absoluteString == "https://example.com/model.jpg?imwidth=400")
         #expect(product.swatches.count == 1)
     }
 
@@ -52,7 +52,7 @@ struct DTOMapperTests {
 
         let product = DTOMapper.mapToProduct(from: dto)
 
-        #expect(product.imageURL?.absoluteString == "https://example.com/product.jpg")
+        #expect(product.imageURL?.absoluteString == "https://example.com/product.jpg?imwidth=400")
     }
 
     @Test func mapsSalePriceCorrectly() {
@@ -61,8 +61,8 @@ struct DTOMapperTests {
             productName: "Jeans",
             brandName: "H&M",
             prices: [
-                PriceDTO(priceType: "whitePrice", price: 399.0, formattedPrice: "399,00 kr."),
-                PriceDTO(priceType: "yellowPrice", price: 299.0, formattedPrice: "299,00 kr.")
+                PriceDTO(priceType: .whitePrice, price: 399.0, formattedPrice: "399,00 kr."),
+                PriceDTO(priceType: .yellowPrice, price: 299.0, formattedPrice: "299,00 kr.")
             ],
             modelImage: nil,
             productImage: "https://example.com/product.jpg",

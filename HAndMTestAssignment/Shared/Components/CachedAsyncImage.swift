@@ -56,7 +56,7 @@ struct CachedAsyncImage: View {
                 }
             }
     }
-
+    
     // MARK: - Image Loading
 
     /// Loads from cache or downloads via the actor's deduplicating loader.

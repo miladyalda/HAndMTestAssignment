@@ -5,8 +5,6 @@
 //  Created by milad yalda on 2026-03-03.
 //
 
-import Foundation
-
 /// Centralized icon names used throughout the product list feature.
 /// Prevents typos and provides a single place to update SF Symbols.
 enum ProductIcons {

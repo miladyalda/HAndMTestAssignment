@@ -30,6 +30,7 @@ struct StatusView: View {
                     Task { await action() }
                 }
                 .buttonStyle(.borderedProminent)
+                .accessibilityIdentifier(AccessibilityID.retryButton)
             }
         }
         .padding()

@@ -4,7 +4,6 @@
 //
 //  Created by milad yalda on 2026-03-03.
 //
-import Foundation
 
 /// User-facing strings for the product list feature.
 /// Centralizes text for consistency and future localization.

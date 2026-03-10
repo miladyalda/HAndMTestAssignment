@@ -22,6 +22,10 @@ enum APIError: LocalizedError {
     case unknown(Error)
     /// A network-level error occurred (no internet, timeout, DNS failure, etc.)
     case networkError(URLError)
+    
+    case serverError(message: String)
+
+    case emptyResponse
 
     var errorDescription: String? {
         switch self {
@@ -31,10 +35,14 @@ enum APIError: LocalizedError {
             return "Invalid response from server"
         case .httpError(let statusCode):
             return "Server error with status code: \(statusCode)"
+        case .emptyResponse:
+            return "Server returned empty response"
         case .decodingError:
             return "Failed to process server response"
         case .unknown(let error):
             return error.localizedDescription
+        case .serverError(let message):
+            return message
         case .networkError(let error):
             switch error.code {
             case .notConnectedToInternet:
@@ -45,5 +53,16 @@ enum APIError: LocalizedError {
                 return "Network error. Please try again."
             }
         }
+    }
+}
+
+nonisolated struct APIErrorResponse: Decodable, Sendable {
+    let error: String?
+    let message: String?
+    let code: Int?
+    
+    // Flexible — APIs vary
+    var errorMessage: String {
+        message ?? error ?? "Unknown error"
     }
 }

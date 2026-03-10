@@ -9,7 +9,7 @@ import Foundation
 
 /// Defines all available API endpoints with fully configurable URL components.
 /// Each part of the URL is separated for easy configuration and maintenance.
-enum Endpoint {
+nonisolated enum Endpoint {
 
     // MARK: - URL Configuration
 

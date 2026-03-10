@@ -58,24 +58,30 @@ actor ImageCache {
 
     // MARK: - Loading with Deduplication
 
-    /// Loads an image from cache or network.
-    /// Deduplicates in-flight requests for the same URL.
+    /// Loads an image from cache or network with request deduplication.
+    /// - Parameter url: The URL of the image to load.
+    /// - Returns: The loaded image, or nil if loading fails.
+    /// - Note: Multiple requests for the same URL share a single network call.
+    ///         Uses `defer` to ensure cleanup even if task is cancelled.
     func loadImage(from url: URL) async -> UIImage? {
+        // 1. Return cached image if available
         if let cached = image(for: url) {
             return cached
         }
 
+        // 2. If already downloading, wait for existing task
         if let existingTask = activeTasks[url] {
             return await existingTask.value
         }
 
+        // 3. Create new download task
         let task = Task<UIImage?, Never> {
             do {
                 let (data, response) = try await session.data(from: url)
                 try Task.checkCancellation()
 
                 guard let httpResponse = response as? HTTPURLResponse,
-                      httpResponse.statusCode == 200 else { return nil }
+                      (200...299).contains(httpResponse.statusCode) else { return nil }
 
                 guard let image = UIImage(data: data) else { return nil }
 
@@ -88,11 +94,14 @@ actor ImageCache {
             }
         }
 
+        // 4. Register task for deduplication
         activeTasks[url] = task
-        let result = await task.value
-        activeTasks.removeValue(forKey: url)
+        
+        // 5. Ensure cleanup runs even if cancelled
+        defer { activeTasks.removeValue(forKey: url) }
 
-        return result
+        // 6. Wait for result and return
+        return await task.value
     }
 
     // MARK: - Helpers

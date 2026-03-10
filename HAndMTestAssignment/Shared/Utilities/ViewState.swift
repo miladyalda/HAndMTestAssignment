@@ -5,8 +5,6 @@
 //  Created by milad yalda on 2026-03-01.
 //
 
-import Foundation
-
 /// Represents the possible states of the product list.
 enum ViewState: Equatable {
     case idle

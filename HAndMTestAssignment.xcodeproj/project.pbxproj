@@ -42,9 +42,34 @@
 		7A262BD82F561AE5001B0AA2 /* screenshot_product_list.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = screenshot_product_list.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		7A098E202F56D5010000DAD4 /* Exceptions for "HAndMTestAssignment" folder in "HAndMTestAssignmentTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Shared/Utilities/AccessibilityID.swift,
+				Shared/Utilities/ProductIcons.swift,
+				Shared/Utilities/ProductStrings.swift,
+			);
+			target = 7A262AC32F549534001B0AA2 /* HAndMTestAssignmentTests */;
+		};
+		7A098E212F56D5010000DAD4 /* Exceptions for "HAndMTestAssignment" folder in "HAndMTestAssignmentUITests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Shared/Utilities/AccessibilityID.swift,
+				Shared/Utilities/ProductIcons.swift,
+				Shared/Utilities/ProductStrings.swift,
+			);
+			target = 7A262ACD2F549534001B0AA2 /* HAndMTestAssignmentUITests */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		7A262AB92F549533001B0AA2 /* HAndMTestAssignment */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				7A098E202F56D5010000DAD4 /* Exceptions for "HAndMTestAssignment" folder in "HAndMTestAssignmentTests" target */,
+				7A098E212F56D5010000DAD4 /* Exceptions for "HAndMTestAssignment" folder in "HAndMTestAssignmentUITests" target */,
+			);
 			path = HAndMTestAssignment;
 			sourceTree = "<group>";
 		};
@@ -436,11 +461,12 @@
 				PRODUCT_BUNDLE_IDENTIFIER = test.assignment.HAndMTestAssignment;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = NO;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -468,11 +494,12 @@
 				PRODUCT_BUNDLE_IDENTIFIER = test.assignment.HAndMTestAssignment;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = NO;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;

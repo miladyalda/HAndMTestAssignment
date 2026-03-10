@@ -9,7 +9,8 @@ import Foundation
 
 /// Protocol defining the data access layer for products.
 /// Abstracts the data source from the ViewModel, enabling testability.
-protocol ProductRepositoryProtocol {
+/// Marked as `nonisolated` to run off MainActor and `Sendable` to safely cross actor boundaries.
+nonisolated protocol ProductRepositoryProtocol: Sendable {
     /// Fetches products and pagination info for a given search query and page.
     func fetchProducts(query: String, page: Int) async throws -> (products: [Product], pagination: PaginationInfo)
 }
@@ -17,7 +18,8 @@ protocol ProductRepositoryProtocol {
 /// Concrete implementation that fetches products from the H&M API.
 /// Maps DTOs to domain models before returning to the caller.
 final class ProductRepository: ProductRepositoryProtocol {
-    private let apiClient: APIClientProtocol
+    
+    nonisolated private let apiClient: APIClientProtocol
 
     /// - Parameter apiClient: The API client used for network requests. Defaults to `APIClient()`.
     init(apiClient: APIClientProtocol = APIClient()) {

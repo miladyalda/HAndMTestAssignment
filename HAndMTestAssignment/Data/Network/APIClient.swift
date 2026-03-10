@@ -9,7 +9,8 @@ import Foundation
 
 /// Protocol defining the API client interface.
 /// Enables dependency injection and mock testing.
-protocol APIClientProtocol {
+/// `nonisolated` keeps network off main thread. `Sendable` allows safe use across actors.
+nonisolated protocol APIClientProtocol: Sendable {
     /// Fetches and decodes a response from the given endpoint.
     func fetch<T: Decodable>(_ endpoint: Endpoint) async throws -> T
 }
@@ -50,7 +51,16 @@ final class APIClient: APIClientProtocol {
         }
 
         guard (200...299).contains(httpResponse.statusCode) else {
+            // Try to decode error response from API
+            if let apiError = try? JSONDecoder().decode(APIErrorResponse.self, from: data) {
+                throw APIError.serverError(message: apiError.errorMessage)
+            }
             throw APIError.httpError(statusCode: httpResponse.statusCode)
+        }
+        
+        // 2. Check data is not empty
+        guard !data.isEmpty else {
+            throw APIError.emptyResponse
         }
 
         // Decode the response into the expected type
