@@ -44,17 +44,30 @@ final class APIClient: APIClientProtocol {
         } catch {
             throw APIError.unknown(error)
         }
-
+        
         // Validate HTTP response
         guard let httpResponse = response as? HTTPURLResponse else {
             throw APIError.invalidResponse
         }
+        
+        // 🔍 DEBUG: Print raw JSON
+        print("=== API Response ===")
+        print("URL: \(url)")
+        print("Status: \(httpResponse.statusCode)")
+        if let jsonString = String(data: data, encoding: .utf8) {
+            print("JSON: \(jsonString)")
+        }
+        print("====================")
+        
+        if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+            print("Top-level keys: \(json.keys)")
+        }
 
         guard (200...299).contains(httpResponse.statusCode) else {
             // Try to decode error response from API
-            if let apiError = try? JSONDecoder().decode(APIErrorResponse.self, from: data) {
-                throw APIError.serverError(message: apiError.errorMessage)
-            }
+         //   if let apiError = try? JSONDecoder().decode(APIErrorResponse.self, from: data) {
+         //       throw APIError.serverError(message: apiError.errorMessage)
+         //   }
             throw APIError.httpError(statusCode: httpResponse.statusCode)
         }
         
@@ -63,9 +76,28 @@ final class APIClient: APIClientProtocol {
             throw APIError.emptyResponse
         }
 
-        // Decode the response into the expected type
+        // 🔍 DEBUG: Print decoding error details
         do {
             return try JSONDecoder().decode(T.self, from: data)
+        } catch let decodingError as DecodingError {
+            print("=== Decoding Error ===")
+            switch decodingError {
+            case .keyNotFound(let key, let context):
+                print("Key '\(key.stringValue)' not found: \(context.debugDescription)")
+                print("Path: \(context.codingPath.map { $0.stringValue })")
+            case .typeMismatch(let type, let context):
+                print("Type mismatch for \(type): \(context.debugDescription)")
+                print("Path: \(context.codingPath.map { $0.stringValue })")
+            case .valueNotFound(let type, let context):
+                print("Value not found for \(type): \(context.debugDescription)")
+                print("Path: \(context.codingPath.map { $0.stringValue })")
+            case .dataCorrupted(let context):
+                print("Data corrupted: \(context.debugDescription)")
+            @unknown default:
+                print("Unknown decoding error: \(decodingError)")
+            }
+            print("======================")
+            throw APIError.decodingError(decodingError)
         } catch {
             throw APIError.decodingError(error)
         }

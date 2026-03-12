@@ -21,3 +21,4 @@ nonisolated struct PaginationDTO: Codable, Sendable {
     let nextPageNum: Int?
     let totalPages: Int
 }
+

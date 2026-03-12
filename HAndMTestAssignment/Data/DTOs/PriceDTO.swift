@@ -16,4 +16,5 @@ struct PriceDTO: Codable {
 enum PriceType: String, Codable {
     case whitePrice
     case yellowPrice
+    case redPrice    // ← Add this
 }
